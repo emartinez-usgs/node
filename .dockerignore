@@ -1,0 +1,10 @@
+.dockerignore
+.git
+code.json
+CODE_OF_CONDUCT.md
+CONTRIBUTING.md
+DISCLAIMER.md
+Dockkerfile
+Jenkinsfile.groovy
+LICENSE.md
+README.md
