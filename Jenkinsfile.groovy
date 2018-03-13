@@ -14,7 +14,7 @@ node {
 
   try {
     stage('Initialize') {
-      clearnWs()
+      cleanWs()
 
       SCM_VARS = checkout scm
 
