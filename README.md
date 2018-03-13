@@ -40,4 +40,5 @@ $ docker build \
 > Note: Using a different base image may not work as expected. Other base
 >       images should be similar to CentOS.
 
-[1] https://github.com/creationix/nvm
+
+[1]: https://github.com/creationix/nvm
