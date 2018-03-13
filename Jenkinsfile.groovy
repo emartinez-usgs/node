@@ -4,13 +4,15 @@ node {
   def CONTAINER_BASE = null
   def FROM_IMAGE = null
   def IMAGE_NAME = null
+  def IMAGE_VERSION = null
   def NODE_VERSION = null
   def SCM_VARS = null
 
   CONTAINER_BASE = "${GITLAB_INNERSOURCE_REGISTRY}/devops/images"
   FROM_IMAGE = "${CONTAINER_BASE}/usgs/centos"
   IMAGE_NAME = "${CONTAINER_BASE}/usgs/node"
-  NODE_VERSION = params.NODE_VERSION
+  IMAGE_VERSION = params.IMAGE_VERSION
+  NODE_VERSION = IMAGE_VERSION;
 
   try {
     stage('Initialize') {
@@ -28,7 +30,6 @@ node {
         )
       }
 
-      // Map "latest" --> "lts/*"
       if (NODE_VERSION == 'latest') {
         NODE_VERSION = 'lts/*'
       }
@@ -41,14 +42,14 @@ node {
           docker build \
             --build-arg FROM_IMAGE=${FROM_IMAGE} \
             --build-arg NODE_VERSION=${NODE_VERSION} \
-            -t ${IMAGE_NAME}:${NODE_VERSION} .
+            -t ${IMAGE_NAME}:${IMAGE_VERSION} .
         """
 
         // Tag for default public Docker Hub
         sh """
           docker tag \
-            ${IMAGE_NAME}:${NODE_VERSION} \
-            usgs/node:${NODE_VERSION}
+            ${IMAGE_NAME}:${IMAGE_VERSION} \
+            usgs/node:${IMAGE_VERSION}
         """
       }
     }
@@ -63,13 +64,13 @@ node {
         'innersource-hazdev-cicd'
       ) {
         ansiColor('xterm') {
-          sh "docker push ${IMAGE_NAME}:${NODE_VERSION}"
+          sh "docker push ${IMAGE_NAME}:${IMAGE_VERSION}"
         }
       }
 
       docker.withRegistry('', 'usgs-docker-hub-credentials') {
         ansiColor('xterm') {
-          sh "docker push usgs/node:${NODE_VERSION}"
+          sh "docker push usgs/node:${IMAGE_VERSION}"
         }
       }
     }
