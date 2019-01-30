@@ -28,50 +28,43 @@ node {
       if (NODE_VERSION == 'latest') {
         NODE_VERSION = 'lts/*'
       }
-      echo "INTERNAL_IMAGE_NAME = ${INTERNAL_IMAGE_NAME}"
-      echo "PUBLIC_IMAGE_NAME = ${PUBLIC_IMAGE_NAME}"
-      echo "NODE_VERSION = ${NODE_VERSION}"
     }
 
-    // stage('Build') {
-    //   ansiColor('xterm') {
-    //     // Tag for internal registry
-    //     sh """
-    //       docker build \
-    //         --build-arg FROM_IMAGE=${FROM_IMAGE} \
-    //         --build-arg NODE_VERSION=${NODE_VERSION} \
-    //         -t ${IMAGE_NAME}:${IMAGE_VERSION} .
-    //     """
+    stage('Build') {
+      ansiColor('xterm') {
+        // Build tag for internal registry
+        sh """
+          docker build \
+            --build-arg FROM_IMAGE=${FROM_IMAGE} \
+            --build-arg NODE_VERSION=${NODE_VERSION} \
+            -t ${INTERNAL_IMAGE_NAME} .
+        """
 
-    //     // Tag for default public Docker Hub
-    //     sh """
-    //       docker tag \
-    //         ${IMAGE_NAME}:${IMAGE_VERSION} \
-    //         usgs/node:${IMAGE_VERSION}
-    //     """
-    //   }
-    // }
+        // Re-tag for default public Docker Hub
+        sh """
+          docker tag \
+            ${INTERNAL_IMAGE_NAME} \
+            ${PUBLIC_IMAGE_NAME}
+        """
+      }
+    }
 
-    // stage('Scan') {
-    //   echo 'TODO :: Implement security scanning.'
-    // }
+    stage('Publish') {
+      docker.withRegistry(
+        "https://${GITLAB_INNERSOURCE_REGISTRY}",
+        'innersource-hazdev-cicd'
+      ) {
+        ansiColor('xterm') {
+          sh "docker push ${INTERNAL_IMAGE_NAME}"
+        }
+      }
 
-    // stage('Publish') {
-    //   docker.withRegistry(
-    //     "https://${GITLAB_INNERSOURCE_REGISTRY}",
-    //     'innersource-hazdev-cicd'
-    //   ) {
-    //     ansiColor('xterm') {
-    //       sh "docker push ${IMAGE_NAME}:${IMAGE_VERSION}"
-    //     }
-    //   }
-
-    //   docker.withRegistry('', 'usgs-docker-hub-credentials') {
-    //     ansiColor('xterm') {
-    //       sh "docker push usgs/node:${IMAGE_VERSION}"
-    //     }
-    //   }
-    // }
+      docker.withRegistry('', 'usgs-docker-hub-credentials') {
+        ansiColor('xterm') {
+          sh "docker push ${PUBLIC_IMAGE_NAME}"
+        }
+      }
+    }
   } catch (err) {
     try {
       mail([
