@@ -2,11 +2,12 @@ ARG FROM_IMAGE=usgs/centos:latest
 FROM $FROM_IMAGE
 
 LABEL maintainer="Eric Martinez <emartinez@usgs.gov>" \
-  dockerfile_version="v0.3.0"
+  dockerfile_version="1.0.0"
 
-
-ENV NPM_CONFIG_CAFILE ${SSL_CERT_FILE}
-ENV NVM_DIR=/home/usgs-user/nvm
+# Expose SSL_CERT_FILE for both npm and node
+ENV NPM_CONFIG_CAFILE=${SSL_CERT_FILE} \
+  NODE_EXTRA_CA_CERTS=${SSL_CERT_FILE} \
+  NVM_DIR=/home/usgs-user/nvm
 
 
 # Install and configure NVM
